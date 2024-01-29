@@ -1,14 +1,14 @@
 import hashlib
 import os
 
-file_af = '.3dm'
-file_path = 'main'
+file_af = '.MOV'
+file_path = 'Zhujingxi'
 
 # Calculate the shake_256 hash value of the file
 with open(file_path + file_af, 'rb') as f:
     hash_obj = hashlib.shake_256()
     hash_obj.update(f.read())
-hash_value_1 = hash_obj.digest(512)
+hash_value_1 = hash_obj.digest(256)
 
 # Convert the hash value to a binary string
 sizebinary = f"{os.path.getsize(file_path + file_af):b}"
