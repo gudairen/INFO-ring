@@ -1,91 +1,86 @@
+import gradio as gr
 import hashlib
 import os
+import random
+import string
+import csv
+from grasshopperAuto import process_grasshopper
 
-file_af = '.MOV'
-file_path = 'Zhujingxi'
+def calculate_hash(file_path):
+    with open(file_path, 'rb') as f:
+        hash_obj = hashlib.shake_256()
+        hash_obj.update(f.read())
+    hash_value = hash_obj.digest(512)
 
-# Calculate the shake_256 hash value of the file
-with open(file_path + file_af, 'rb') as f:
-    hash_obj = hashlib.shake_256()
-    hash_obj.update(f.read())
-hash_value_1 = hash_obj.digest(256)
+    sizebinary = f"{os.path.getsize(file_path):b}"
+    binary_hash_value = sizebinary + ''.join(f"{byte:08b}" for byte in hash_value)
 
-# Convert the hash value to a binary string
-sizebinary = f"{os.path.getsize(file_path + file_af):b}"
-binary_hash_value_1 = sizebinary + ''.join(f"{byte:08b}" for byte in hash_value_1)
+    return binary_hash_value
 
-print(sizebinary)
-print(binary_hash_value_1)
+def generate_random_hash(length=8):
+    letters_and_digits = string.ascii_letters + string.digits
+    return ''.join(random.choice(letters_and_digits) for i in range(length))
 
-
-def cut_len(lst, lens):
-    """
-    Split a list into sublists of specified length
-    :param lst: The list to split
-    :param lens: The length of the sublists
-    :return: The list of sublists
-    """
-    return [lst[i:i + lens] for i in range(0, len(lst), lens)]
-
+def cut_len(lst, length):
+    return [lst[i:i + length] for i in range(0, len(lst), length)]
 
 def bin_int(lst):
-    """
-    Convert a list of binary strings to a list of integers
-    :param lst: The list of binary strings
-    :return: The list of integers
-    """
     return [int(''.join(i), 2) for i in lst]
 
-
-def pattern_cull_method_1(lst):
-    """
-    Split a list into two sublists, the first containing elements at odd positions and the second containing elements at even positions
-    :param lst: The list to split
-    :return: The two sublists
-    """
+def pattern_cull_method(lst):
     x_cor = lst[::2]
     y_cor = lst[1::2]
     if len(x_cor) > len(y_cor):
         y_cor.append(x_cor[-1])
     return [x_cor, y_cor]
 
+def process_files(file, inner, outer, height, NodeSize, StrutSize, KinkAngle):
+    file_path = file.name
+    binary_hash_value = calculate_hash(file_path)
+    int_list = bin_int(cut_len(binary_hash_value, 8))
+    split_list = pattern_cull_method(int_list)
 
-def output_cor(lst):
-    """
-    Output two sublists to two separate files
-    :param lst: The list containing two sublists
-    """
-    with open('xCor.txt', 'w') as x_cor_file:
-        x_cor_file.writelines(f"{c}\n" for c in lst[0])
-    with open('yCor.txt', 'w') as y_cor_file:
-        y_cor_file.writelines(f"{c}\n" for c in lst[1])
+    # Prepare the coordinates for process_grasshopper
+    CorX = split_list[0]
+    CorY = [counter * 4 for counter in range(len(split_list[0]))]  # Assuming a step of 4
+    CorZ = split_list[1]
 
+    # Generate a unique file name using a random hash
+    random_hash = generate_random_hash()
+    output_file_name = f"output_{random_hash}.3dm"
+    output_file_path = os.path.join("./output", output_file_name)
 
-def output_cor_one(lst, lit):
-    """
-    Merge two sublists into a string and output it to a file
-    :param lst: The list containing two sublists
-    :param lit: The multiplier
-    """
-    with open(file_path + '.txt', 'w') as cor_file:
-        for counter, x in enumerate(lst[0]):
-            cor_file.write(f"{x},{counter * lit},{lst[1][counter]}\n")
+    # Create the output directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
+    output_Cor_name = f"output_{"Fix"}.csv"
+    output_Cor_path = os.path.join("./output", output_Cor_name)
+    with open(output_Cor_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        for x, y, z in zip(CorX, CorY, CorZ):
+            writer.writerow([x, y, z])  # Writing the data
+        print("File written successfully.")
 
-def output():
-    """
-    Main function that calls other functions to process and output the result
-    """
-    # Split the binary string into substrings of length 8 and convert them to a list of integers
-    int_list = bin_int(cut_len(binary_hash_value_1, 8))
-    # Split the list of integers into two sublists
-    split_list = pattern_cull_method_1(int_list)
-    # Output the two sublists to files
-    output_cor(split_list)
-    # Merge the two sublists into a string and output it to a file
-    output_cor_one(split_list, 4)
+    # Call the grasshopper processing function with the new definition
+    process_grasshopper(CorX, CorY, CorZ, output_file_path, inner, outer, height, NodeSize, StrutSize, KinkAngle)
 
+    return output_file_path  # Return the path of the output file for download
 
+iface = gr.Interface(
+    fn=process_files,
+    inputs=[
+        gr.File(label="Select a file"),
+        gr.Slider(0.00, 0.20, value=0.026, step=0.001, label="Inner"),
+        gr.Slider(0.00, 0.20, value=0.101, step=0.001, label="Outer"),
+        gr.Slider(0.00, 0.20, value=0.068, step=0.001, label="Height"),
+        gr.Slider(0.00, 1, value=0.508, step=0.001, label="NodeSize"),
+        gr.Slider(0.00, 10, value=5.196, step=0.001, label="StrutSize"),
+        gr.Slider(0.00, 1.3, value=0.717, step=0.001, label="KinkAngle")
+    ],
+    outputs=gr.File(label="Download Output File"),
+    title="Grasshopper File Processor",
+    description="Upload a file to process with Grasshopper and tune the parameters."
+)
 
-output()
-
+if __name__ == '__main__':
+    iface.launch()
