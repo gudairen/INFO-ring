@@ -1,5 +1,7 @@
 # **INFO-RING**
 
+![image](assets/00.gif)
+
 "Some ideas are formed by the combination of simple thoughts, which I call complex; examples include beauty, gratitude, human, army, universe, and so on."——John Locke   An Essay Concerning Human Understanding
 
 ## Description
@@ -32,15 +34,14 @@ We want to creative a code and visualised way to grasp the more complex, abstrac
 ## About algorithms
 
 It’s worth noting that this algorithm is just a simple example to demonstrate the idea and it won’t be the final version. In future versions, I will try to implement more complex algorithms to increase information density and endurance.
-![alt text](01.gif)
 
 
-![alt text](02.gif)
+![image](assets/02.gif)
 
-![alt text](03.gif)
+![image](assets/03.gif)
 
-![alt text](04.gif)
+![image](assets/04.gif)
 
-![alt text](05.gif)
+![image](assets/05.gif)
 
-![alt text](06.gif)
+![image](assets/06.gif)
