@@ -15,6 +15,12 @@
  I try to discuss whether being in a three-dimensional environment makes it impossible for us to comprehend higher-dimensional phenomena.？
  
  Furthermore, if we attempt to define things beyond three dimensions using mathematical formulas within (at most) three dimensions, would we never be able to fully and accurately convert and record the original information?
+![image](assets/letter1.png)
+![image](assets/letter2.png)
+![image](assets/letter3.png)
+![image](assets/letter4.png)
+![image](assets/letter5.png)
+![image](assets/letter6.png)
  
 ## Why 
 Many times I would feel fuzzy and dizzy in my head. I feel as if I can't understand much of what's going on around me, and I'm looking at a lot of sights through a hair glass. I can feel that I'm close to them and it seems so far away. So I try to picture it in words, but it seems difficult.
